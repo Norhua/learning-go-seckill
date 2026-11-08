@@ -1,0 +1,31 @@
+server:
+  host: "0.0.0.0"
+  port: 8080
+  read_timeout: 5s
+  write_timeout: 10s
+  idle_timeout: 60s
+  shutdown_timeout: 10s
+
+mysql:
+  host: "127.0.0.1"
+  port: 13306
+  username: "root"
+  database: "seckill"
+  max_open_conns: 50
+  max_idle_conns: 25
+  conn_max_lifetime: 1h
+  conn_max_idle_time: 10m
+
+redis:
+  host: "127.0.0.1"
+  port: 16379
+  db: 0
+  pool_size: 50
+  min_idle_conns: 10
+  dial_timeout: 3s
+  read_timeout: 2s
+  write_timeout: 2s
+
+log:
+  level: "info"
+  format: "text"
