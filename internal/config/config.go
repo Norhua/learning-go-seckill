@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"strconv"
 	"strings"
@@ -298,4 +299,44 @@ func (c *Config) Validate() error {
 	}
 
 	return errors.Join(errs...)
+}
+
+// LogValue 实现 slog.LogValuer 接口，确保日志打印 MySQLConfig 时自动脱敏 Password
+func (m MySQLConfig) LogValue() slog.Value {
+	return slog.GroupValue(
+		slog.String("host", m.Host),
+		slog.Int("port", m.Port),
+		slog.String("username", m.Username),
+		slog.String("password", "[REDACTED]"),
+		slog.String("database", m.Database),
+		slog.Int("max_open_conns", m.MaxOpenConns),
+		slog.Int("max_idle_conns", m.MaxIdleConns),
+		slog.Duration("conn_max_lifetime", m.ConnMaxLifetime),
+		slog.Duration("conn_max_idle_time", m.ConnMaxIdleTime),
+	)
+}
+
+// LogValue 实现 slog.LogValuer 接口，确保日志打印 RedisConfig 时自动脱敏 Password
+func (r RedisConfig) LogValue() slog.Value {
+	return slog.GroupValue(
+		slog.String("host", r.Host),
+		slog.Int("port", r.Port),
+		slog.String("password", "[REDACTED]"),
+		slog.Int("db", r.DB),
+		slog.Int("pool_size", r.PoolSize),
+		slog.Int("min_idle_conns", r.MinIdleConns),
+		slog.Duration("dial_timeout", r.DialTimeout),
+		slog.Duration("read_timeout", r.ReadTimeout),
+		slog.Duration("write_timeout", r.WriteTimeout),
+	)
+}
+
+// LogValue 实现 slog.LogValuer 接口，展开子配置项以触发子结构体的 LogValue 脱敏
+func (c Config) LogValue() slog.Value {
+	return slog.GroupValue(
+		slog.Any("server", c.Server),
+		slog.Any("mysql", c.MySQL),
+		slog.Any("redis", c.Redis),
+		slog.Any("log", c.Log),
+	)
 }
