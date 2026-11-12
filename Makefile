@@ -8,6 +8,12 @@ MYSQL_USER ?= root
 MYSQL_PASSWORD ?= $(MYSQL_ROOT_PASSWORD)
 MYSQL_DATABASE ?= seckill
 
+# run: 本地启动 API 服务（自动加载 .env）
+.PHONY: run
+
+run:
+	go run ./cmd/api
+
 # golang-migrate 可执行文件路径
 MIGRATE := $(HOME)/.go/bin/migrate
 

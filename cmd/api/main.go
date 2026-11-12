@@ -10,6 +10,7 @@ import (
 	"go-seckill/internal/infra/mysql"
 	"go-seckill/internal/infra/redis"
 	"go-seckill/internal/logger"
+	"go-seckill/internal/server"
 )
 
 const (
@@ -68,6 +69,11 @@ func run(ctx context.Context) error {
 		}
 	}()
 	log.InfoContext(ctx, "redis connected successfully")
+
+	ser := server.New(cfg.Server, log)
+	if err := ser.Start(); err != nil {
+		return fmt.Errorf("start http server: %w", err)
+	}
 
 	return nil
 }
