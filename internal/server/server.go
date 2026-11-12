@@ -70,6 +70,7 @@ func New(cfg config.ServerConfig, log *slog.Logger) *Server {
 
 	srv.engine.GET("/healthz", srv.handleHealthz)
 	srv.engine.GET("/readyz", srv.handleReadyz)
+	srv.engine.GET("/debug/slow", srv.handleDebugSlow)
 
 	return srv
 }
@@ -88,8 +89,9 @@ func (s *Server) Start() error {
 	return nil
 }
 
-// Shutdown 优雅停机（供 Step 10 使用）
+// Shutdown 优雅停机
 func (s *Server) Shutdown(ctx context.Context) error {
+	s.MarkShuttingDown() // 标记服务进入停机阶段，使 /readyz 立即返回 503
 	s.log.InfoContext(ctx, "http server shutting down")
 	return s.httpServer.Shutdown(ctx)
 }
