@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"sync/atomic"
 
 	"github.com/gin-gonic/gin"
 
@@ -13,9 +14,11 @@ import (
 
 // Server 封装标准库 http.Server 与 Gin Engine
 type Server struct {
-	httpServer *http.Server
-	engine     *gin.Engine
-	log        *slog.Logger
+	httpServer   *http.Server
+	engine       *gin.Engine
+	log          *slog.Logger
+	checkers     map[string]HealthChecker
+	shuttingDown atomic.Bool
 }
 
 // New 创建并配置 HTTP Server
@@ -58,11 +61,17 @@ func New(cfg config.ServerConfig, log *slog.Logger) *Server {
 		IdleTimeout:  cfg.IdleTimeout,
 	}
 
-	return &Server{
+	srv := &Server{
 		httpServer: httpSrv,
 		engine:     engine,
 		log:        log,
+		checkers:   make(map[string]HealthChecker),
 	}
+
+	srv.engine.GET("/healthz", srv.handleHealthz)
+	srv.engine.GET("/readyz", srv.handleReadyz)
+
+	return srv
 }
 
 // Engine 暴露底层 *gin.Engine（方便后续注册路由或使用 httptest 单测）

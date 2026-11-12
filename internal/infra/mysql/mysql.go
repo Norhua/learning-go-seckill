@@ -58,3 +58,15 @@ func Close(db *gorm.DB) error {
 	}
 	return sqlDB.Close()
 }
+
+// Ping 检查 MySQL 连通性，供 /readyz 就绪探针使用
+func Ping(ctx context.Context, db *gorm.DB) error {
+	if db == nil {
+		return fmt.Errorf("mysql db is nil")
+	}
+	sqlDB, err := db.DB()
+	if err != nil {
+		return fmt.Errorf("get underlying sql.DB: %w", err)
+	}
+	return sqlDB.PingContext(ctx)
+}

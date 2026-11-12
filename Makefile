@@ -42,3 +42,36 @@ migrate-down:
 ## migrate-version: 查看当前数据库迁移版本
 migrate-version:
 	$(MIGRATE) -path $(MIGRATIONS_DIR) -database "$(MIGRATE_DB_URL)" version
+
+# docker compose 命令（指定 .env 文件和 docker-compose.yml 文件路径）
+COMPOSE := docker compose --env-file .env -f deploy/docker-compose.yml
+
+.PHONY: docker-up docker-down docker-down-v docker-ps docker-stop docker-start docker-logs
+
+## docker-up: 启动所有依赖并等待健康检查通过
+docker-up:
+	$(COMPOSE) up -d --wait
+
+## docker-down: 停止并移除容器（保留命名卷数据）
+docker-down:
+	$(COMPOSE) down
+
+## docker-down-v: 停止并移除容器及数据卷（会清空数据库和 Redis 数据）
+docker-down-v:
+	$(COMPOSE) down -v
+
+## docker-ps: 查看依赖服务状态
+docker-ps:
+	$(COMPOSE) ps
+
+## docker-stop: 停止指定服务（不传 s 则停止全部），用法: make docker-stop s=redis
+docker-stop:
+	$(COMPOSE) stop $(s)
+
+## docker-start: 启动指定服务（不传 s 则启动全部），用法: make docker-start s=redis
+docker-start:
+	$(COMPOSE) start $(s)
+
+## docker-logs: 查看服务日志，用法: make docker-logs s=mysql
+docker-logs:
+	$(COMPOSE) logs -f $(s)

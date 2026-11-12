@@ -71,6 +71,13 @@ func run(ctx context.Context) error {
 	log.InfoContext(ctx, "redis connected successfully")
 
 	ser := server.New(cfg.Server, log)
+	ser.RegisterChecker("mysql", func(ctx context.Context) error {
+		return mysql.Ping(ctx, db)
+	})
+	ser.RegisterChecker("redis", func(ctx context.Context) error {
+		return rdb.Ping(ctx).Err()
+	})
+
 	if err := ser.Start(); err != nil {
 		return fmt.Errorf("start http server: %w", err)
 	}
