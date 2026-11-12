@@ -1,0 +1,34 @@
+version: "2"
+
+run:
+  timeout: 3m
+  # 包含 integration 编译标签，确保 integration_test.go 也会被静态检查覆盖
+  build-tags:
+    - integration
+
+linters:
+  default: none
+  enable:
+    - errcheck      # 检查未处理的 error 返回值
+    - govet         # Go 官方静态分析
+    - ineffassign   # 检查赋值后未被读取的无效变量覆盖
+    - staticcheck   # 深度静态检查与最佳实践
+    - unused        # 检查未使用的变量、常量、函数或类型
+  settings:
+    errcheck:
+      # 拦截 `_ = xxx()` 显式忽略 error 的写法
+      check-blank: true
+      # 拦截未带 `, ok` 的类型断言（如 x := val.(string)），防止运行时 panic
+      check-type-assertions: true
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    gofmt:
+      simplify: true
+    goimports:
+      # 将本项目内部包单独排在第三组（标准库 -> 第三方库 -> go-seckill/...）
+      local-prefixes:
+        - go-seckill

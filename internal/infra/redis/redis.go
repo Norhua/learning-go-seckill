@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -29,8 +30,7 @@ func New(ctx context.Context, cfg config.RedisConfig) (*goredis.Client, error) {
 	defer cancel()
 
 	if err := client.Ping(pingCtx).Err(); err != nil {
-		_ = client.Close()
-		return nil, fmt.Errorf("ping redis: %w", err)
+		return nil, errors.Join(fmt.Errorf("ping redis: %w", err), client.Close())
 	}
 
 	return client, nil

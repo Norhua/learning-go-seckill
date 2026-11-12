@@ -49,7 +49,9 @@ func TestIntegration_ReadyzAndMigration(t *testing.T) {
 		t.Fatalf("connect to mysql seckill_test failed: %v", err)
 	}
 	defer func() {
-		_ = mysql.Close(db)
+		if err := mysql.Close(db); err != nil {
+			t.Errorf("close mysql failed: %v", err)
+		}
 	}()
 
 	// 2. 初始化真实 Redis 连接
@@ -58,7 +60,9 @@ func TestIntegration_ReadyzAndMigration(t *testing.T) {
 		t.Fatalf("connect to redis failed: %v", err)
 	}
 	defer func() {
-		_ = rdb.Close()
+		if err := rdb.Close(); err != nil {
+			t.Errorf("close redis failed: %v", err)
+		}
 	}()
 
 	// 3. 验证 seckill_test 库已执行迁移（ping_test 表可正常插入与查询）
@@ -67,7 +71,9 @@ func TestIntegration_ReadyzAndMigration(t *testing.T) {
 		t.Fatalf("insert into ping_test failed (请确认已对 seckill_test 执行迁移): %v", err)
 	}
 	t.Cleanup(func() {
-		_ = db.WithContext(context.Background()).Delete(&pingTestRecord{}, record.ID).Error
+		if err := db.WithContext(context.Background()).Delete(&pingTestRecord{}, record.ID).Error; err != nil {
+			t.Errorf("cleanup ping_test record failed: %v", err)
+		}
 	})
 
 	var got pingTestRecord

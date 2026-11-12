@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -40,8 +41,7 @@ func New(ctx context.Context, cfg config.MySQLConfig) (*gorm.DB, error) {
 	defer cancel()
 
 	if err := sqlDB.PingContext(pingCtx); err != nil {
-		_ = sqlDB.Close()
-		return nil, fmt.Errorf("ping mysql: %w", err)
+		return nil, errors.Join(fmt.Errorf("ping mysql: %w", err), sqlDB.Close())
 	}
 
 	return db, nil

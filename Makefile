@@ -2,12 +2,20 @@
 -include .env
 export
 
+# run & build --------------------------------
+BIN_DIR := bin
+APP_BINARY := $(BIN_DIR)/api
 
-# run: 本地启动 API 服务（自动加载 .env）
-.PHONY: run
+.PHONY: run build
 
+## run: 本地启动 API 服务（自动加载 .env）
 run:
 	go run ./cmd/api
+
+## build: 编译 API 二进制文件到 bin/api
+build:
+	@mkdir -p $(BIN_DIR)
+	go build -o $(APP_BINARY) ./cmd/api
 
 # database migrate --------------------------------
 MYSQL_HOST ?= 127.0.0.1
@@ -94,3 +102,16 @@ test:
 test-integration:
 	$(MIGRATE) -path $(MIGRATIONS_DIR) -database "$(MIGRATE_TEST_DB_URL)" up
 	go test -race -v -tags=integration ./...
+
+# lint & format --------------------------------
+GOLANGCI_LINT := $(HOME)/.go/bin/golangci-lint
+
+.PHONY: lint fmt
+
+## lint: 运行 golangci-lint 代码静态检查
+lint:
+	$(GOLANGCI_LINT) run ./...
+
+## fmt: 使用 golangci-lint 自动格式化代码并整理 import 分组
+fmt:
+	$(GOLANGCI_LINT) fmt ./...
