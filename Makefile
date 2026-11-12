@@ -2,17 +2,19 @@
 -include .env
 export
 
-MYSQL_HOST ?= 127.0.0.1
-MYSQL_PORT ?= 13306
-MYSQL_USER ?= root
-MYSQL_PASSWORD ?= $(MYSQL_ROOT_PASSWORD)
-MYSQL_DATABASE ?= seckill
 
 # run: 本地启动 API 服务（自动加载 .env）
 .PHONY: run
 
 run:
 	go run ./cmd/api
+
+# database migrate --------------------------------
+MYSQL_HOST ?= 127.0.0.1
+MYSQL_PORT ?= 13306
+MYSQL_USER ?= root
+MYSQL_PASSWORD ?= $(MYSQL_ROOT_PASSWORD)
+MYSQL_DATABASE ?= seckill
 
 # golang-migrate 可执行文件路径
 MIGRATE := $(HOME)/.go/bin/migrate
@@ -43,6 +45,7 @@ migrate-down:
 migrate-version:
 	$(MIGRATE) -path $(MIGRATIONS_DIR) -database "$(MIGRATE_DB_URL)" version
 
+# docker compose --------------------------------
 # docker compose 命令（指定 .env 文件和 docker-compose.yml 文件路径）
 COMPOSE := docker compose --env-file .env -f deploy/docker-compose.yml
 
@@ -75,3 +78,19 @@ docker-start:
 ## docker-logs: 查看服务日志，用法: make docker-logs s=mysql
 docker-logs:
 	$(COMPOSE) logs -f $(s)
+
+# test --------------------------------
+# 测试数据库名称与迁移连接串
+MYSQL_TEST_DATABASE ?= seckill_test
+MIGRATE_TEST_DB_URL := mysql://$(MYSQL_USER):$(MYSQL_PASSWORD)@tcp($(MYSQL_HOST):$(MYSQL_PORT))/$(MYSQL_TEST_DATABASE)?multiStatements=true
+
+.PHONY: test test-integration
+
+## test: 运行所有单元测试（开启竞态检测，不依赖 Docker）
+test:
+	go test -race -v ./...
+
+## test-integration: 对 seckill_test 执行迁移并运行集成测试（需先 make docker-up）
+test-integration:
+	$(MIGRATE) -path $(MIGRATIONS_DIR) -database "$(MIGRATE_TEST_DB_URL)" up
+	go test -race -v -tags=integration ./...

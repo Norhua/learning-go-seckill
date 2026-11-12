@@ -8,10 +8,20 @@ import (
 	"time"
 )
 
-// setRequiredSecrets 统一设置必填的敏感环境变量，并清空可能干扰测试的宿主机环境变量
+// setRequiredSecrets 清空可能干扰测试的宿主机/Makefile 环境变量，并统一设置必填的敏感环境变量
 func setRequiredSecrets(t *testing.T) {
 	t.Helper()
-	t.Setenv("MYSQL_ROOT_PASSWORD", "")
+	envKeys := []string{
+		"SERVER_HOST", "SERVER_PORT", "SERVER_READ_TIMEOUT", "SERVER_WRITE_TIMEOUT", "SERVER_IDLE_TIMEOUT", "SERVER_SHUTDOWN_TIMEOUT",
+		"MYSQL_HOST", "MYSQL_PORT", "MYSQL_USER", "MYSQL_DATABASE", "MYSQL_ROOT_PASSWORD", "MYSQL_PASSWORD",
+		"MYSQL_MAX_OPEN_CONNS", "MYSQL_MAX_IDLE_CONNS", "MYSQL_CONN_MAX_LIFETIME", "MYSQL_CONN_MAX_IDLE_TIME",
+		"REDIS_HOST", "REDIS_PORT", "REDIS_PASSWORD", "REDIS_DB", "REDIS_POOL_SIZE", "REDIS_MIN_IDLE_CONNS",
+		"REDIS_DIAL_TIMEOUT", "REDIS_READ_TIMEOUT", "REDIS_WRITE_TIMEOUT",
+		"LOG_LEVEL", "LOG_FORMAT",
+	}
+	for _, key := range envKeys {
+		t.Setenv(key, "")
+	}
 	t.Setenv("MYSQL_PASSWORD", "test_mysql_pwd")
 	t.Setenv("REDIS_PASSWORD", "test_redis_pwd")
 }
