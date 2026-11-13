@@ -86,13 +86,3 @@ func (s *Server) handleReadyz(c *gin.Context) {
 		"checks": checks,
 	})
 }
-
-// handleDebugSlow 模拟慢请求（默认耗时 5s），用于验证优雅停机
-func (s *Server) handleDebugSlow(c *gin.Context) {
-	s.log.InfoContext(c.Request.Context(), "slow request started, sleeping 5s...")
-	time.Sleep(5 * time.Second)
-	s.log.InfoContext(c.Request.Context(), "slow request finished")
-	Success(c, gin.H{
-		"status": "slow request completed",
-	})
-}

@@ -49,14 +49,14 @@ implement/
 ### 4.1 准备环境变量
 
 - 复制 `.env.example` 为 `.env`，并根据实际情况修改敏感配置
-- 安装 golang migrate
+- 安装 golang-migrate
 - 安装 golangci-lint
-- 修改 Makefile 中 `MIGRATE_BIN` 与 `GOLANGCI_LINT_BIN` 的路径为实际安装路径
+- 修改 Makefile 中 `MIGRATE` 与 `GOLANGCI_LINT` 的路径为实际安装路径
 ```bash
 cp .env.example .env
 nvim .env
 go install -tags 'mysql' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
-go install github.com/golangci/golangci-lint/cmd/golangci-lint
+go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
 nvim Makefile
 ```
 

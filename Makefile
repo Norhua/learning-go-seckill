@@ -92,7 +92,7 @@ docker-logs:
 MYSQL_TEST_DATABASE ?= seckill_test
 MIGRATE_TEST_DB_URL := mysql://$(MYSQL_USER):$(MYSQL_PASSWORD)@tcp($(MYSQL_HOST):$(MYSQL_PORT))/$(MYSQL_TEST_DATABASE)?multiStatements=true
 
-.PHONY: test test-integration
+.PHONY: test test-integration test-db-reset mysql-cli
 
 ## test: 运行所有单元测试（开启竞态检测，不依赖 Docker）
 test:
@@ -102,6 +102,15 @@ test:
 test-integration:
 	$(MIGRATE) -path $(MIGRATIONS_DIR) -database "$(MIGRATE_TEST_DB_URL)" up
 	go test -race -v -tags=integration ./...
+
+## test-db-reset: 彻底重置测试数据库（回滚所有表并重新迁移，清理脏数据）
+test-db-reset:
+	echo "y" | $(MIGRATE) -path $(MIGRATIONS_DIR) -database "$(MIGRATE_TEST_DB_URL)" down -all
+	$(MIGRATE) -path $(MIGRATIONS_DIR) -database "$(MIGRATE_TEST_DB_URL)" up
+
+## mysql-cli: 进入 Docker 容器内的 MySQL 交互式终端
+mysql-cli:
+	$(COMPOSE) exec mysql mysql -u$(MYSQL_USER) -p$(MYSQL_PASSWORD) $(MYSQL_DATABASE)
 
 # lint & format --------------------------------
 GOLANGCI_LINT := $(HOME)/.go/bin/golangci-lint

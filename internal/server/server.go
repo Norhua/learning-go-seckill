@@ -70,7 +70,6 @@ func New(cfg config.ServerConfig, log *slog.Logger) *Server {
 
 	srv.engine.GET("/healthz", srv.handleHealthz)
 	srv.engine.GET("/readyz", srv.handleReadyz)
-	srv.engine.GET("/debug/slow", srv.handleDebugSlow)
 
 	return srv
 }
